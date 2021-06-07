@@ -1,20 +1,14 @@
 {
-    "name": "mongoose-diff-history",
+    "name": "@wildflowerhealth/mongoose-diff-history",
     "version": "2.1.0",
-    "description": "Manage Mongo Collection diff History and versions",
+    "description": "Manage Mongo Collection diff History and versions / wildflowerhealth fork",
     "main": "diffHistoryModel.js",
     "directories": {
         "test": "tests"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/mimani/mongoose-diff-history"
-    },
-    "husky": {
-        "hooks": {
-            "pre-commit": "pretty-quick --staged",
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
+        "url": "https://github.com/wildflowerhealth/mongoose-diff-history"
     },
     "dependencies": {
         "deep-empty-object": "^1.0.5",
@@ -26,13 +20,10 @@
     "devDependencies": {
         "bluebird": "^3.5.1",
         "chai": "^3.5.0",
-        "commitlint": "^8.3.5",
-        "husky": "^4.2.5",
         "istanbul": "^0.4.5",
         "mocha": "^2.5.3",
         "mongoose": "^4.13.9",
         "prettier": "^2.0.5",
-        "pretty-quick": "^2.0.1",
         "standard-version": "^7.1.0"
     },
     "scripts": {
@@ -51,6 +42,9 @@
         {
             "name": "Zachary Rollyson",
             "email": "me@zjr.io"
+        },
+        {
+            "name": "Yury Imbro"
         }
     ],
     "engines": {
@@ -65,7 +59,7 @@
         "versioning"
     ],
     "bugs": {
-        "url": "https://github.com/mimani/mongoose-diff-history/issues"
+        "url": "https://github.com/wildflowerhealth/mongoose-diff-history/issues"
     },
     "license": "GPL-2.0"
 }
