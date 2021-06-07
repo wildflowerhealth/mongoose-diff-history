@@ -68,10 +68,17 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject) {
                 reason,
                 version: lastHistory ? lastHistory.version + 1 : 0
             });
-            if (session) {
-                return history.save({ session });
-            }
-            return history.save();
+
+            const promisedSave = session
+                ? history.save({ session })
+                : history.save();
+
+            return promisedSave.then(doc => {
+                if (isValidCb(opts.onNewDiff)) {
+                    opts.onNewDiff(doc);
+                }
+                return doc;
+            })
         });
 }
 
@@ -240,6 +247,7 @@ const getHistories = (modelName, id, expandableFields, cb) => {
  * @param {Object} [opts] - Options passed by Mongoose Schema.plugin
  * @param {string} [opts.uri] - URI for MongoDB (necessary, for instance, when not using mongoose.connect).
  * @param {string|string[]} [opts.omit] - fields to omit from diffs (ex. ['a', 'b.c.d']).
+ * @param {function} [opts.onNewDiff] - callback that will be called with new diff object after its creation
  */
 const plugin = function lastModifiedPlugin(schema, opts = {}) {
     if (opts.uri) {
