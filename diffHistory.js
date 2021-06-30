@@ -274,6 +274,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
 
     schema.pre('save', function (next) {
         if (this.isNew) return next();
+        console.log(`pre save this: ${util.inspect(this, false, 4, true)}`)
         this.constructor
             .findOne({ _id: this._id })
             .then(original => {
@@ -292,6 +293,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('findOneAndUpdate', function (next) {
+        console.log(`pre findOneAndUpdate this: ${util.inspect(this, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
@@ -301,6 +303,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('update', function (next) {
+        console.log(`pre update this: ${util.inspect(this, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
@@ -310,6 +313,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('updateOne', function (next) {
+        console.log(`pre updateOne this: ${util.inspect(this, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
@@ -319,6 +323,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('remove', function (next) {
+        console.log(`pre remove this: ${util.inspect(this, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
