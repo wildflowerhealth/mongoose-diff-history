@@ -1,6 +1,6 @@
 {
     "name": "@wildflowerhealth/mongoose-diff-history",
-    "version": "2.8.0",
+    "version": "2.9.0",
     "description": "Manage Mongo Collection diff History and versions / wildflowerhealth fork",
     "main": "diffHistory.js",
     "types": "diffHistory.d.ts",
