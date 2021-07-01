@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
-
+const util = require('util');
 const omit = require('omit-deep');
 const pick = require('lodash.pick');
 const empty = require('deep-empty-object');
 const { assign } = require('power-assign');
+
+mongoose.Promise = Promise;
 
 // try to find an id property, otherwise just use the index in the array
 const objectHash = (obj, idx) => obj._id || obj.id || `$$index: ${idx}`;
@@ -32,7 +34,8 @@ function checkRequired(opts, queryObject, updatedObject) {
     }
 }
 
-function saveDiffObject(currentObject, original, updated, opts, queryObject) {
+function saveDiffObject(currentObject, original, updated, opts, queryObject, audit) {
+    console.log(`saveDiffObject audit: ${util.inspect(audit, false, 4, true)}`)
     const { __user: user, __reason: reason, __session: session } =
         (queryObject && queryObject.options) || currentObject;
 
@@ -40,6 +43,7 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject) {
         JSON.parse(JSON.stringify(original)),
         JSON.parse(JSON.stringify(updated))
     );
+    console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, opts.omit: ${util.inspect(opts.omit, false, 4, true)}, opts.pick: ${util.inspect(opts.pick, false, 4, true)}`)
 
     if (opts.omit) {
         omit(diff, opts.omit, { cleanEmpty: true });
@@ -56,35 +60,48 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject) {
     const collectionId = currentObject._id;
     const collectionName =
         currentObject.constructor.modelName || queryObject.model.modelName;
+    console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, collectionId: ${collectionId}, collectionName: ${collectionName}`)
 
     return History.findOne({ collectionId, collectionName })
         .sort('-version')
+        .exec() // the interwebs suggest this is necessary
         .then(lastHistory => {
-            const history = new History({
+            console.log(`saveDiffObject lastHistory: ${util.inspect(lastHistory, false, 4, true)}`)
+            const newHistory = {
                 collectionId,
                 collectionName,
                 diff,
                 user,
+                audit,
                 reason,
                 version: lastHistory ? lastHistory.version + 1 : 0
-            });
+            };
+            console.log(`saveDiffObject newHistory: ${util.inspect(newHistory, false, 4, true)}`)
+            const history = new History(newHistory);
 
             const promisedSave = session
                 ? history.save({ session })
                 : history.save();
 
-            return promisedSave.then(doc => {
+            return promisedSave.exec().then(doc => {
+                console.log(`saveDiffObject promisedSave audit: ${util.inspect(audit, false, 4, true)}`)
                 if (isValidCb(opts.onNewDiff)) {
+                    console.log(`saveDiffObject promisedSave isValidCb doc: ${util.inspect(doc, false, 4, true)}`)
                     opts.onNewDiff(doc);
                 }
                 return doc;
             })
+        })
+        .catch(err => {
+            console.log(`saveDiffObject err: ${util.inspect(err, false, 4, true)}`)
+            return null;
         });
 }
 
 /* eslint-disable complexity */
 
-const saveDiffHistory = (queryObject, currentObject, opts) => {
+const saveDiffHistory = (queryObject, currentObject, opts, audit) => {
+    console.log(`saveDiffHistory audit: ${util.inspect(audit, false, 4, true)}`)
     const queryUpdate = queryObject.getUpdate();
     const schemaOptions = queryObject.model.schema.options || {};
 
@@ -127,15 +144,18 @@ const saveDiffHistory = (queryObject, currentObject, opts) => {
         dbObject,
         updatedObject,
         opts,
-        queryObject
+        queryObject,
+        audit
     );
 };
 
-const saveDiffs = (queryObject, opts) =>
-    queryObject
+const saveDiffs = (queryObject, opts, audit) => {
+    console.log(`saveDiffs audit: ${util.inspect(audit, false, 4, true)}`);
+    return queryObject
         .find(queryObject._conditions)
         .cursor()
-        .eachAsync(result => saveDiffHistory(queryObject, result, opts));
+        .eachAsync(result => saveDiffHistory(queryObject, result, opts, audit));
+};
 
 const getVersion = (model, id, version, queryOpts, cb) => {
     if (typeof queryOpts === 'function') {
@@ -252,12 +272,13 @@ const getHistories = (modelName, id, expandableFields, cb) => {
 const plugin = function lastModifiedPlugin(schema, opts = {}) {
     if (opts.uri) {
         const mongoVersion = parseInt(mongoose.version);
+        let conn;
         if (mongoVersion < 5) {
-            mongoose.connect(opts.uri, { useMongoClient: true }).catch(e => {
+            conn = mongoose.connect(opts.uri, { useMongoClient: true }).catch(e => {
                 console.error('mongoose-diff-history connection error:', e);
             });
         } else {
-            mongoose.connect(opts.uri, { useNewUrlParser: true }).catch(e => {
+            conn = mongoose.connect(opts.uri, { useNewUrlParser: true }).catch(e => {
                 console.error('mongoose-diff-history connection error:', e);
             });
         }
@@ -293,11 +314,12 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('findOneAndUpdate', function (next) {
-        console.log(`pre findOneAndUpdate this: ${util.inspect(this, false, 4, true)}`)
+        const ctx = this?.options?.$ctx;
+        console.log(`pre findOneAndUpdate ctx: ${util.inspect(ctx, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
-        saveDiffs(this, opts)
+        saveDiffs(this, opts, ctx?.audit)
             .then(() => next())
             .catch(next);
     });
