@@ -83,7 +83,7 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
                 ? history.save({ session })
                 : history.save();
 
-            return promisedSave.exec().then(doc => {
+            return promisedSave.then(doc => {
                 console.log(`saveDiffObject promisedSave audit: ${util.inspect(audit, false, 4, true)}`)
                 if (isValidCb(opts.onNewDiff)) {
                     console.log(`saveDiffObject promisedSave isValidCb doc: ${util.inspect(doc, false, 4, true)}`)
