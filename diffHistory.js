@@ -35,7 +35,7 @@ function checkRequired(opts, queryObject, updatedObject) {
 }
 
 function saveDiffObject(currentObject, original, updated, opts, queryObject, audit) {
-    console.log(`saveDiffObject audit: ${util.inspect(audit, false, 4, true)}`)
+    // console.log(`saveDiffObject audit: ${util.inspect(audit, false, 4, true)}`)
     const { __user: user, __reason: reason, __session: session } =
         (queryObject && queryObject.options) || currentObject;
 
@@ -43,7 +43,7 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
         JSON.parse(JSON.stringify(original)),
         JSON.parse(JSON.stringify(updated))
     );
-    console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, opts.omit: ${util.inspect(opts.omit, false, 4, true)}, opts.pick: ${util.inspect(opts.pick, false, 4, true)}`)
+    // console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, opts.omit: ${util.inspect(opts.omit, false, 4, true)}, opts.pick: ${util.inspect(opts.pick, false, 4, true)}`)
 
     if (opts.omit) {
         omit(diff, opts.omit, { cleanEmpty: true });
@@ -60,13 +60,13 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
     const collectionId = currentObject._id;
     const collectionName =
         currentObject.constructor.modelName || queryObject.model.modelName;
-    console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, collectionId: ${collectionId}, collectionName: ${collectionName}`)
+    // console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, collectionId: ${collectionId}, collectionName: ${collectionName}`)
 
     return History.findOne({ collectionId, collectionName })
         .sort('-version')
         .exec() // the interwebs suggest this is necessary
         .then(lastHistory => {
-            console.log(`saveDiffObject lastHistory: ${util.inspect(lastHistory, false, 4, true)}`)
+            // console.log(`saveDiffObject lastHistory: ${util.inspect(lastHistory, false, 4, true)}`)
             const newHistory = {
                 collectionId,
                 collectionName,
@@ -76,7 +76,7 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
                 reason,
                 version: lastHistory ? lastHistory.version + 1 : 0
             };
-            console.log(`saveDiffObject newHistory: ${util.inspect(newHistory, false, 4, true)}`)
+            // console.log(`saveDiffObject newHistory: ${util.inspect(newHistory, false, 4, true)}`)
             const history = new History(newHistory);
 
             const promisedSave = session
@@ -84,24 +84,24 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
                 : history.save();
 
             return promisedSave.then(doc => {
-                console.log(`saveDiffObject promisedSave audit: ${util.inspect(audit, false, 4, true)}`)
+                // console.log(`saveDiffObject promisedSave audit: ${util.inspect(audit, false, 4, true)}`)
                 if (isValidCb(opts.onNewDiff)) {
-                    console.log(`saveDiffObject promisedSave isValidCb doc: ${util.inspect(doc, false, 4, true)}`)
-                    opts.onNewDiff(doc);
+                    // console.log(`saveDiffObject promisedSave isValidCb doc: ${util.inspect(doc, false, 4, true)}`)
+                    opts.onNewDiff({...doc, previous: lastHistory});
                 }
                 return doc;
             })
         })
         .catch(err => {
             console.log(`saveDiffObject err: ${util.inspect(err, false, 4, true)}`)
-            return null;
+            return err;
         });
 }
 
 /* eslint-disable complexity */
 
 const saveDiffHistory = (queryObject, currentObject, opts, audit) => {
-    console.log(`saveDiffHistory audit: ${util.inspect(audit, false, 4, true)}`)
+    // console.log(`saveDiffHistory audit: ${util.inspect(audit, false, 4, true)}`)
     const queryUpdate = queryObject.getUpdate();
     const schemaOptions = queryObject.model.schema.options || {};
 
@@ -150,7 +150,7 @@ const saveDiffHistory = (queryObject, currentObject, opts, audit) => {
 };
 
 const saveDiffs = (queryObject, opts, audit) => {
-    console.log(`saveDiffs audit: ${util.inspect(audit, false, 4, true)}`);
+    // console.log(`saveDiffs audit: ${util.inspect(audit, false, 4, true)}`);
     return queryObject
         .find(queryObject._conditions)
         .cursor()
@@ -295,7 +295,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
 
     schema.pre('save', function (next) {
         if (this.isNew) return next();
-        console.log(`pre save this: ${util.inspect(this, false, 4, true)}`)
+        console.log(`pre save this.$local: ${util.inspect(this.$local, false, 4, true)}`)
         this.constructor
             .findOne({ _id: this._id })
             .then(original => {
