@@ -20,3 +20,10 @@ jobs:
         run: |
           npm install
           npm run build --if-present
+      - name: Slack Status
+        if: always()
+        uses: kpritam/slack-job-status-action@v1
+        with:
+          job-status: ${{ job.status }}
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel: github-actions-status
