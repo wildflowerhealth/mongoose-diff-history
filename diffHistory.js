@@ -154,7 +154,7 @@ const saveDiffHistory = (queryObject, currentObject, opts, audit) => {
 };
 
 const saveDiffs = (queryObject, opts, audit) => {
-    // console.log(`saveDiffs audit: ${util.inspect(audit, false, 4, true)}`);
+    console.log(`saveDiffs audit: ${util.inspect(audit, false, 4, true)}`);
     return queryObject
         .find(queryObject._conditions)
         .cursor()
@@ -298,8 +298,8 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     }
 
     schema.pre('save', function (next) {
+        console.log(`pre save this.$local: ${util.inspect(this.$local, false, 4, true)}, this.isNew: ${util.inspect(this.isNew, false, 4, true)}`)
         if (this.isNew) return next();
-        console.log(`pre save this.$local: ${util.inspect(this.$local, false, 4, true)}`)
         this.constructor
             .findOne({ _id: this._id })
             .then(original => {
@@ -316,6 +316,11 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
             .then(() => next())
             .catch(next);
     });
+
+    schema.pre('insertMany', function (next) {
+        console.log(`pre insertMany this: ${util.inspect(this, false, 2, true)}`);
+        next();
+    })
 
     schema.pre('findOneAndUpdate', function (next) {
         const ctx = this?.options?.$ctx;
