@@ -307,7 +307,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
                 this.toObject({ depopulate: true }),
                 opts,
                 null,
-                this.$locals
+                this.$locals?.$ctx
             )
             .then(() => next())
             .catch(next);
@@ -324,7 +324,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
                     this.toObject({ depopulate: true }),
                     opts,
                     null,
-                    this.$locals
+                    this.$locals?.$ctx
                 );
             })
             .then(() => next())
