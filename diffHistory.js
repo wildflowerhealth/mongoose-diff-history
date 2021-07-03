@@ -41,7 +41,7 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
 
     let diff = diffPatcher.diff(
         JSON.parse(JSON.stringify(original ?? {})),
-        JSON.parse(JSON.stringify(updated))
+        JSON.parse(JSON.stringify(updated ?? {}))
     );
     // console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, opts.omit: ${util.inspect(opts.omit, false, 4, true)}, opts.pick: ${util.inspect(opts.pick, false, 4, true)}`)
 
@@ -91,6 +91,7 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
                         ...doc.toObject(),
                         original,
                         updated,
+                        op: original == null ? 'insert' : updated == null ? 'delete' : 'update',
                     });
                 }
                 return doc;
@@ -367,7 +368,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
         if (checkRequired(opts, this)) {
             return next();
         }
-        saveDiffObject(this, this, {}, opts)
+        saveDiffObject(this, this, undefined, opts)
             .then(() => next())
             .catch(next);
     });
