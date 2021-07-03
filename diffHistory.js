@@ -305,7 +305,9 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
                 this,
                 undefined,
                 this.toObject({ depopulate: true }),
-                opts
+                opts,
+                null,
+                this.$locals
             )
             .then(() => next())
             .catch(next);
@@ -320,7 +322,9 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
                     this,
                     original,
                     this.toObject({ depopulate: true }),
-                    opts
+                    opts,
+                    null,
+                    this.$locals
                 );
             })
             .then(() => next())
@@ -338,7 +342,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
         if (checkRequired(opts, this)) {
             return next();
         }
-        saveDiffs(this, opts, ctx?.audit)
+        saveDiffs(this, opts, ctx)
             .then(() => next())
             .catch(next);
     });
