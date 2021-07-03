@@ -302,7 +302,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
         if (this.isNew) {
             return saveDiffObject(
                 this,
-                {},
+                undefined,
                 this.toObject({ depopulate: true }),
                 opts
             )
