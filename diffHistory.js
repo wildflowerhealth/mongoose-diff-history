@@ -40,7 +40,7 @@ function saveDiffObject(currentObject, original, updated, opts, queryObject, aud
         (queryObject && queryObject.options) || currentObject;
 
     let diff = diffPatcher.diff(
-        JSON.parse(JSON.stringify(original)),
+        JSON.parse(JSON.stringify(original ?? {})),
         JSON.parse(JSON.stringify(updated))
     );
     // console.log(`saveDiffObject diff: ${util.inspect(diff, false, 4, true)}, opts.omit: ${util.inspect(opts.omit, false, 4, true)}, opts.pick: ${util.inspect(opts.pick, false, 4, true)}`)
