@@ -298,8 +298,17 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     }
 
     schema.pre('save', function (next) {
-        console.log(`pre save this.$local: ${util.inspect(this.$local, false, 4, true)}, this.isNew: ${util.inspect(this.isNew, false, 4, true)}`)
-        if (this.isNew) return next();
+        console.log(`pre save this.$locals: ${util.inspect(this.$locals, false, 4, true)}, this.isNew: ${util.inspect(this.isNew, false, 4, true)}`)
+        if (this.isNew) {
+            return saveDiffObject(
+                this,
+                {},
+                this.toObject({ depopulate: true }),
+                opts
+            )
+            .then(() => next())
+            .catch(next);
+        }
         this.constructor
             .findOne({ _id: this._id })
             .then(original => {
