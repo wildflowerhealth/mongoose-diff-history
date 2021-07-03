@@ -155,7 +155,7 @@ const saveDiffHistory = (queryObject, currentObject, opts, audit) => {
 };
 
 const saveDiffs = (queryObject, opts, audit) => {
-    console.log(`saveDiffs audit: ${util.inspect(audit, false, 4, true)}`);
+    // console.log(`saveDiffs audit: ${util.inspect(audit, false, 4, true)}`);
     return queryObject
         .find(queryObject._conditions)
         .cursor()
@@ -299,7 +299,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     }
 
     schema.pre('save', function (next) {
-        console.log(`pre save this.$locals: ${util.inspect(this.$locals, false, 4, true)}, this.isNew: ${util.inspect(this.isNew, false, 4, true)}`)
+        // console.log(`pre save this.$locals: ${util.inspect(this.$locals, false, 4, true)}, this.isNew: ${util.inspect(this.isNew, false, 4, true)}`)
         if (this.isNew) {
             return saveDiffObject(
                 this,
@@ -332,13 +332,13 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('insertMany', function (next) {
-        console.log(`pre insertMany this: ${util.inspect(this, false, 2, true)}`);
+        console.log(`pre insertMany (audit not implemented) this: ${util.inspect(this, false, 2, true)}`);
         next();
     })
 
     schema.pre('findOneAndUpdate', function (next) {
         const ctx = this?.options?.$ctx;
-        console.log(`pre findOneAndUpdate ctx: ${util.inspect(ctx, false, 4, true)}`)
+        // console.log(`pre findOneAndUpdate ctx: ${util.inspect(ctx, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
@@ -348,7 +348,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('update', function (next) {
-        console.log(`pre update this: ${util.inspect(this, false, 4, true)}`)
+        console.log(`pre update (audit not implemented) this: ${util.inspect(this, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
@@ -358,7 +358,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('updateOne', function (next) {
-        console.log(`pre updateOne this: ${util.inspect(this, false, 4, true)}`)
+        console.log(`pre updateOne (audit not implemented) this: ${util.inspect(this, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
@@ -368,7 +368,7 @@ const plugin = function lastModifiedPlugin(schema, opts = {}) {
     });
 
     schema.pre('remove', function (next) {
-        console.log(`pre remove this: ${util.inspect(this, false, 4, true)}`)
+        console.log(`pre remove (audit not implemented) this: ${util.inspect(this, false, 4, true)}`)
         if (checkRequired(opts, this)) {
             return next();
         }
